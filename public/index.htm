@@ -1,0 +1,162 @@
+<head>
+	<title>pigeon</title>
+	
+	<link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+	<script type="text/x-handlebars">
+		<div class="header">
+			<h1>.pigeon</h1>
+		</div>
+		
+		<div class="main">
+			
+
+			{{#with Pigeon}}
+			
+				{{#view Pigeon.ControlView contentBinding="this" class="controls"}}
+					<button {{action "reset" target="view"}}>Reset All States</button>
+				{{/view}}
+			
+				{{#each apis}}
+					{{#view Pigeon.ApiView contentBinding="this" class="api"}}
+						<div class="definition">
+							<h2 class="endpoint">
+								{{input class="endpoint" value=endpoint placeholder="endpoint"}}
+								<button {{action "remove" target="view"}}>x</button>
+							</h2>
+							
+							{{view Pigeon.EditorView valueBinding="body"}}
+							
+							{{#view Pigeon.StateView contentBinding="this" class="state"}}
+							
+								{{#if error}}
+									<div class="json">{{error}}</div>
+								{{else}}
+									{{#if state}}
+										<div class="json">{{json}}</div>
+									{{/if}}
+								{{/if}}
+								
+								<button {{action "reset" target="view"}}>Reset State</button>
+							{{/view}}
+						</div>
+						
+						<div class="options">
+							{{#each options}}
+								{{#view Pigeon.OptionView class="option" contentBinding="this"}}
+									<h3 class="name">options.{{input value=key placeholder="option"}} <button {{action "remove" target="view"}}>x</button></h3>
+									
+									{{#each values}}
+										{{#view Pigeon.ValueView class="value" contentBinding="this"}}
+										
+											{{view Ember.RadioButton class="inline" nameBinding="option.id" selectionBinding="selected"}}
+											{{view Pigeon.EditorView valueBinding="content" dynamic=true class="inline"}}
+										{{/view}}
+									{{/each}}
+								{{/view}}
+							{{/each}}
+						</div>
+						
+						{{#view Pigeon.MiddleWareView contentBinding="this" class="middleware"}}
+							{{view Pigeon.EditorView valueBinding="middleware"}}
+						{{/view}}
+					{{/view}}
+
+				{{/each}}
+			{{/with}}
+		</div>
+	</script>
+	
+	<script type="text/x-handlebars" id="editor">
+		<div {{bindAttr id="view.id" class=":editor view.dynamic:dynamic"}}></div>
+	</script>
+
+	<script src="js/lib/jquery-1.9.1.js"></script>
+	<script src="js/lib/handlebars-1.0.0.js"></script>
+	<script src="js/lib/ember-1.1.2.js"></script>
+	<script src="js/lib/underscore.js"></script>
+	
+	<script src="js/lib/ace.js" charset="utf-8"></script>
+	
+	<script src="js/utils.js"></script>
+	
+	<script src="js/app.js"></script>
+	<script src="js/model.js"></script>
+	<script src="js/view.js"></script>
+
+	
+	<script>
+		Pigeon.construct({
+			
+			apis: [
+							
+				{ 
+					endpoint: '/foo/bar',
+					
+					body: {
+						hello: ['hi', 'there', 'world'],
+						
+						what: 1,
+						
+						could: {
+							
+							possibly: 'be',
+							wrong: [
+								1,
+								2,
+								3,
+								4,
+								
+								{
+									what: 'an',
+									odd: 'object',
+									number: 1337.37
+								}
+							]
+						},
+						
+						personally: 'I have no idea'
+					},
+					
+					options: [
+						{
+							key: 'contingency',
+							
+							values: [
+								{
+									content: "'addCard'",
+									selected: true
+								},
+								{
+									content: "'updateCard'"
+								},
+							]
+						},
+						
+						{
+							key: 'country',
+							
+							values: [
+								{
+									content: "'US'"
+								},
+								{
+									content: "'CA'",
+									selected: true
+								},
+								{
+									content: "'GB'"
+								},
+							]
+						}
+					],
+					
+					middleware: 'state.foo = request.foo;'
+				}
+			]
+		});
+		
+	</script>
+</body>
