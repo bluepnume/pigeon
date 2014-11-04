@@ -41,3 +41,26 @@ Ember.child = function(cls) {
 Ember.typeName = function(ob) {
 	return ob.constructor.toString().split('.').get('lastObject').toLowerCase();
 }
+
+
+window.util = {
+	
+	eval: function(_string, _scope) {
+		
+		if (!_string)
+			return;
+		
+		for (var _key in _scope) {
+			eval('var ' + _key + ' = _scope[_key];');
+		}
+		
+		eval('var result = ' + _string.trim());
+		
+		return result;
+	},
+	
+	deepCopy: function(item) {
+		return JSON.parse(JSON.stringify(item));
+	}
+	
+}

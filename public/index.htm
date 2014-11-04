@@ -13,58 +13,104 @@
 		<div class="main">
 			
 
-			{{#with Pigeon}}
-			
-				{{#view Pigeon.ControlView contentBinding="this" class="controls"}}
-					<button {{action "reset" target="view"}}>Reset All States</button>
-				{{/view}}
-			
-				{{#each apis}}
-					{{#view Pigeon.ApiView contentBinding="this" class="api"}}
-						<div class="definition">
-							<h2 class="endpoint">
-								{{input class="endpoint" value=endpoint placeholder="endpoint"}}
-								<button {{action "remove" target="view"}}>x</button>
-							</h2>
-							
-							{{view Pigeon.EditorView valueBinding="body"}}
-							
-							{{#view Pigeon.StateView contentBinding="this" class="state"}}
-							
-								{{#if error}}
-									<div class="json">{{error}}</div>
-								{{else}}
-									{{#if state}}
-										<div class="json">{{json}}</div>
-									{{/if}}
-								{{/if}}
-								
-								<button {{action "reset" target="view"}}>Reset State</button>
-							{{/view}}
-						</div>
-						
-						<div class="options">
-							{{#each options}}
-								{{#view Pigeon.OptionView class="option" contentBinding="this"}}
-									<h3 class="name">options.{{input value=key placeholder="option"}} <button {{action "remove" target="view"}}>x</button></h3>
-									
-									{{#each values}}
-										{{#view Pigeon.ValueView class="value" contentBinding="this"}}
-										
-											{{view Ember.RadioButton class="inline" nameBinding="option.id" selectionBinding="selected"}}
-											{{view Pigeon.EditorView valueBinding="content" dynamic=true class="inline"}}
-										{{/view}}
-									{{/each}}
-								{{/view}}
-							{{/each}}
-						</div>
-						
-						{{#view Pigeon.MiddleWareView contentBinding="this" class="middleware"}}
-							{{view Pigeon.EditorView valueBinding="middleware"}}
-						{{/view}}
-					{{/view}}
-
-				{{/each}}
+			{{#with Pigeon.global}}
+            
+                {{#view Pigeon.GlobalView contentBinding="this"}}
+                
+                    <button {{action "reset" target="view"}}>Reset All States</button>
+                
+                    <div class="row">
+                        <h3>Global State</h3>
+                
+                        <div class="column">
+                            {{view Pigeon.EditorView valueBinding="body"}}
+                            
+                            {{#if body}}
+                                {{#if error}}
+                                    <div class="json">{{error}}</div>
+                                {{else}}    
+                                    <div class="json">{{json state}}</div>
+                                {{/if}}
+                            {{/if}}
+                        </div>
+                        
+                        <div class="column narrow">
+                            <h4>Options</h4>
+                            
+                            {{#each options}}
+                                {{#view Pigeon.OptionView class="option" contentBinding="this"}}
+                                    <h3 class="name">options.{{input value=key placeholder="option"}} <button {{action "remove" target="view"}}>x</button></h3>
+                                    
+                                    {{#each values}}
+                                        {{#view Pigeon.ValueView class="value" contentBinding="this"}}
+                                        
+                                            {{view Ember.RadioButton class="inline" nameBinding="option.id" selectionBinding="selected"}}
+                                            {{view Pigeon.EditorView valueBinding="content" dynamic=true class="inline"}}
+                                        {{/view}}
+                                    {{/each}}
+                                {{/view}}
+                            {{/each}}
+                        </div>
+                    </div>
+                
+                    {{#each apis}}
+                        {{#view Pigeon.ApiView contentBinding="this" class="api"}}
+                            <div class="column">
+                                <h3>
+                                    Endpoint:
+                                    {{input value=method   placeholder="ALL" class="tiny"}}
+                                    {{input value=endpoint placeholder="endpoint" class="large"}}
+                                    <button {{action "remove" target="view"}}>x</button>
+                                </h3>
+                                
+                                <h4>Body</h4>
+                                
+                                {{view Pigeon.EditorView valueBinding="body"}}
+                                
+                                
+                                
+                                {{#view Pigeon.StateView contentBinding="this" class="state"}}
+                                           
+                                    {{#if body}}
+                                        <h4>State</h4>
+                                    
+                                        {{#if error}}
+                                            <div class="json">{{error}}</div>
+                                        {{else}}    
+                                            <div class="json">{{json state}}</div>
+                                        {{/if}}
+                                        
+                                        <button {{action "reset" target="view"}}>Reset State</button>
+                                    {{/if}}
+                                {{/view}}
+                            </div>
+                            
+                            <div class="column narrow">
+                                <h4>Options</h4>
+                                
+                                {{#each options}}
+                                    {{#view Pigeon.OptionView class="option" contentBinding="this"}}
+                                        <h3 class="name">options.{{input value=key placeholder="option"}} <button {{action "remove" target="view"}}>x</button></h3>
+                                        
+                                        {{#each values}}
+                                            {{#view Pigeon.ValueView class="value" contentBinding="this"}}
+                                            
+                                                {{view Ember.RadioButton class="inline" nameBinding="option.id" selectionBinding="selected"}}
+                                                {{view Pigeon.EditorView valueBinding="content" dynamic=true class="inline"}}
+                                            {{/view}}
+                                        {{/each}}
+                                    {{/view}}
+                                {{/each}}
+                            </div>
+                            
+                            {{#view Pigeon.MiddleWareView contentBinding="this" class="column"}}
+                                <h4>Middleware</h4>
+                                {{view Pigeon.EditorView valueBinding="middleware"}}
+                            {{/view}}
+                        {{/view}}
+        
+                    {{/each}}
+                {{/view}}
 			{{/with}}
 		</div>
 	</script>
@@ -77,86 +123,13 @@
 	<script src="js/lib/handlebars-1.0.0.js"></script>
 	<script src="js/lib/ember-1.1.2.js"></script>
 	<script src="js/lib/underscore.js"></script>
-	
-	<script src="js/lib/ace.js" charset="utf-8"></script>
+	<script src="/socket.io/socket.io.js"></script>
+    <script src="js/lib/ace.js" charset="utf-8"></script>
 	
 	<script src="js/utils.js"></script>
 	
 	<script src="js/app.js"></script>
 	<script src="js/model.js"></script>
 	<script src="js/view.js"></script>
-
-	
-	<script>
-		Pigeon.construct({
-			
-			apis: [
-							
-				{ 
-					endpoint: '/foo/bar',
-					
-					body: {
-						hello: ['hi', 'there', 'world'],
-						
-						what: 1,
-						
-						could: {
-							
-							possibly: 'be',
-							wrong: [
-								1,
-								2,
-								3,
-								4,
-								
-								{
-									what: 'an',
-									odd: 'object',
-									number: 1337.37
-								}
-							]
-						},
-						
-						personally: 'I have no idea'
-					},
-					
-					options: [
-						{
-							key: 'contingency',
-							
-							values: [
-								{
-									content: "'addCard'",
-									selected: true
-								},
-								{
-									content: "'updateCard'"
-								},
-							]
-						},
-						
-						{
-							key: 'country',
-							
-							values: [
-								{
-									content: "'US'"
-								},
-								{
-									content: "'CA'",
-									selected: true
-								},
-								{
-									content: "'GB'"
-								},
-							]
-						}
-					],
-					
-					middleware: 'state.foo = request.foo;'
-				}
-			]
-		});
-		
-	</script>
+    <script src="js/data.js"></script>
 </body>

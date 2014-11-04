@@ -9,8 +9,7 @@ Ember.RadioButton = Ember.View.extend({
 });
 
 
-Pigeon.ControlView = Ember.View.extend({
-	
+Pigeon.GlobalView = Ember.View.extend({
 	actions: {
 		
 		reset: function() {
@@ -70,11 +69,11 @@ Pigeon.EditorView = Ember.View.extend({
 		editor.blur();
 		
 		editor.setOptions({
-			minLines: this.get('dynamic') ? 0 : 20,
+			minLines: this.get('dynamic') ? 0 : 5,
 			maxLines: 15
 		});
 		
-		editor.getSession().setValue(view.get('value'))
+		editor.getSession().setValue(view.get('value') || '')
 		
 		editor.on('change', function() {
 			view.set('value', editor.getSession().getValue())
@@ -99,3 +98,14 @@ Pigeon.StateView = Ember.View.extend({
 		}
 	}
 })
+
+Ember.Handlebars.registerBoundHelper('json', function(ob) {
+    
+	try {
+	    return JSON.stringify(ob, null, 2);
+	}
+	catch(e) {
+	    return e;
+	}
+	
+});

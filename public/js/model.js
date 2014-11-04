@@ -77,16 +77,12 @@ Pigeon.Model = Ember.Object.extend({
 })
 
 
-Pigeon.Api = Pigeon.Model.extend({
-	keyName: 'endpoint',
+
+Pigeon.Global = Pigeon.Model.extend({
+	keyName: 'global',
 	
+	apis: Ember.children('Pigeon.Api'),
 	options: Ember.children('Pigeon.Option'),
-	
-	init: function() {
-		this._super();
-		
-		this.resetState();
-	},
 	
 	body: function(key, value) {
 	
@@ -96,59 +92,203 @@ Pigeon.Api = Pigeon.Model.extend({
 		return JSON.stringify(value, null, 2);
 	}.property(),
 	
-	obj: function(key, value) {
+	error: function() {
+		
+		try {
+			JSON.stringify(util.eval(this.get('body'), {
+				options: this.get('evaluatedOptions')
+			}));
+		} catch(e) {
+			return e;
+		}
+	}.property('body'),
+	
+	state: function(key, value) {
+		
+		if (value)
+			return value;
+		
+		if (!this.get('error'))
+			return util.eval(this.get('body'), {
+				options: this.get('evaluatedOptions')
+			});
+
+	}.property('body', 'error', 'evaluatedOptions'),
+	
+	evaluatedOptions: function() {
+		var self = this;
 		
 		var options = {}
 		this.get('options').forEach(function(option) {
-			if (!option.get('key')) return;
+			var key = option.get('key');
+			
+			if (!key)
+				return;
 			
 			try {
-				eval('var content = ' + option.get('content'))
+				options[key] = util.eval(option.get('content'), {
+					global: self.get('pigeon.state'),
+					option: option
+				})
 			}
 			catch (e) {
-				var content = option.get('content');
+				options[key] = option.get('content');
 			}
-			
-			options[option.get('key')] = content;
 		})
 		
-		try {
-			eval('var body = ' + this.get('body'));
-			this.set('error', null);
-			return body;
-		}
-		catch (e) {
-			this.set('error', e)
-		}
-	}.property('body', 'options.@each.key', 'options.@each.content'),
+		return options
+		
+	}.property('options.@each.key', 'options.@each.content'),
 	
 	updateState: function() {
+		this.set('state', util.deepCopy(this.get('state')));
+	},
+	
+	resetState: function() {
+		this.get('apis').forEach(function(api) {
+			api.resetState();
+		});
+		
 		this.propertyDidChange('state');
+	},
+})
+
+
+Pigeon.Api = Pigeon.Model.extend({
+	keyName: 'endpoint',
+	
+	options: Ember.children('Pigeon.Option'),
+	
+	init: function() {
+		this._super();
+	},
+	
+	middleware: function(key, value) {
+		if (!value)
+			return;
+		
+		value = value.toString().trim();
+		
+		var match = value.match('function\\s*\\([^)]*\\)\\s*\{[ \\t]*\\n?([\\s\\S]+)\\s*\\}');
+		
+		if (match)
+			value = match[1].trimRight();
+			
+		if (!value.trim())
+			return;
+		
+		var lines = value.split('\n')
+		
+		while (true) {
+			
+			var whitespaceChar = lines[0].charAt(0);
+			
+			if (whitespaceChar !== ' ' && whitespaceChar != '\t')
+				break;
+			
+			var indented = lines.every(function(line) {
+				
+				if (!line)
+					return true
+				
+				return line.charAt(0) === whitespaceChar;
+			})
+			
+			if (indented)
+				lines = lines.map(function(line) {
+					if (!line)
+						return line;
+					
+					return line.slice(1);
+				})
+			else
+				break
+		}
+		
+		return lines.filter(function(line) {
+			return line;
+		}).join('\n')
+		
+	}.property(),
+	
+	body: function(key, value) {
+	
+		if (typeof value === 'string')
+			return value;
+		
+		return JSON.stringify(value, null, 2);
+	}.property(),
+	
+	error: function() {
+		
+		try {
+			JSON.stringify(util.eval(this.get('body'), {
+				global:  this.get('global.state'),
+				options: this.get('evaluatedOptions')
+			}));
+		} catch(e) {
+			return e;
+		}
+	}.property('body'),
+	
+	state: function(key, value) {
+		
+		if (value)
+			return value;
+		
+		if (!this.get('error'))
+			return util.eval(this.get('body'), {
+				global:  this.get('global.state'),
+				options: this.get('evaluatedOptions')
+			});
+		
+	}.property('body', 'error', 'evaluatedOptions'),
+	
+	evaluatedOptions: function() {
+		var self = this;
+		
+		var options = {}
+		this.get('options').forEach(function(option) {
+			var key = option.get('key');
+			
+			if (!key)
+				return;
+			
+			try {
+				options[key] = util.eval(option.get('content'), {
+					global: self.get('pigeon.state'),
+					option: option
+				})
+			}
+			catch (e) {
+				options[key] = option.get('content');
+			}
+		})
+		
+		return options
+		
+	}.property('options.@each.key', 'options.@each.content'),
+	
+	updateState: function() {
+		this.set('state', util.deepCopy(this.get('state')));
 	},
 	
 	resetState: function(key, value) {
-		this.set('state', JSON.parse(JSON.stringify(this.get('obj') || null)));
-	}.observes('obj'),
-	
-	json: function() {
-		
-		try {
-			return JSON.stringify(this.get('state'), null, 2);
-			this.set('error', null);
-			return state;
-		}
-		catch (e) {
-			this.set('error', e)
-		}
-	}.property('state'),
+		this.propertyDidChange('state');
+	},
 	
 	call: function(request, callback) {
 		
 		var state = this.get('state');
 		
 		if (this.get('middleware')) {
-			eval(this.get('middleware'));
+			util.eval(this.get('middleware'), {
+				request: request,
+				global:  this.get('global.state'),
+				state:   this.get('state')
+			});
 			this.updateState();
+			this.get('global').updateState();
 		}
 		
 		callback(state);

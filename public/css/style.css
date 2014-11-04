@@ -18,9 +18,28 @@ body {
 h1, h2, h3, h4, h5, h6 {
 	margin: 0;
 	padding: 0;
-	font-weight: normal;
+	font-weight: bold;
+	font-size: 14px;
+	margin: 10px 0;
+}
+
+h1 {
+	font-size: 30px;
+}
+
+h2 {
+	font-size: 20px;
+}
+
+h3 {
+	font-size: 16px;
+}
+
+h4 {
 	font-size: 14px;
 }
+
+
 
 input {
 	border: none;
@@ -30,12 +49,31 @@ input {
 	padding: 3px 5px;
 }
 
+input.tiny {
+	width: 50px;
+}
+
+input.large {
+	width: 300px;
+}
+
 button {
 	border: none;
 	background: rgba(0, 0, 0, 0.1);
 	padding: 4px 8px;
 	font-size: 14px;
 	cursor: pointer;
+}
+
+.column {
+	display: inline-block;
+	vertical-align: top;
+	width: 500px;
+	margin-right: 20px;
+}
+
+.column.narrow {
+	width: 300px;
 }
 
 .inline {
@@ -60,7 +98,6 @@ button {
 .header h1 {
 	margin: 0;
 	padding: 0;
-	font-size: 30px;
 }
 
 .main {
@@ -73,22 +110,19 @@ button {
 	margin-bottom: 20px;
 }
 
+.row {
+	padding-bottom: 20px;
+	border-bottom: 1px solid #eee;
+	margin-bottom: 20px;
+}
+
 .api {
 	padding-bottom: 20px;
 	border-bottom: 1px solid #eee;
 	margin-bottom: 20px;
 }
 
-
-.api .definition {
-	display: inline-block;
-	width: 500px;
-	vertical-align: top;
-	margin-right: 20px;
-	margin-bottom: 30px;
-}
-
-.api .definition .endpoint input {
+.api .endpoint input {
 	padding: 3px 10px;
 	font-size: 20px;
 	width: 300px;
@@ -97,7 +131,7 @@ button {
 	font-weight: bold;
 }
 
-.api .definition .json {
+.json {
 	
 	background: rgba(0, 0, 0, 0.02);
 	margin: 10px 0;
@@ -105,42 +139,27 @@ button {
 	white-space: pre;
 	font-family: monospace;
 	font-size: 11px;
-	width: 500px;
+	width: 100%;
 	overflow: auto;
 	
 	max-height: 200px;
 }
 
-.api .options {
-	display: inline-block;
-	width: 300px;
-	margin-bottom: 30px;
-	vertical-align: top;
-	margin-right: 40px;
-}
-
-.api .options .option {
-	width: 300px;
+.api .option {
+	width: 96%;
 	margin-bottom: 15px;
 	vertical-align: top;
 	background-color: rgba(0, 0, 0, .02);
-	padding: 10px;
+	padding: 2%;
 }
 
-.api .options .option .name {
+.api .option .name {
 	margin-bottom: 10px;
 	font-weight: bold;
 }
 
-.api .options .option .value {
+.api .option .value {
 	margin-bottom: 8px;
-}
-
-.api .middleware {
-	display: inline-block;
-	width: 300px;
-	margin-bottom: 30px;
-	vertical-align: top;
 }
 
 
